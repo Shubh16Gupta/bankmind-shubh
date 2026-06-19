@@ -1,4 +1,3 @@
-# train.py - Complete with EDA and Model Training
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,17 +15,13 @@ warnings.filterwarnings('ignore')
 print("="*60)
 print("BANKMIND - TRACK C: SYSTEM BUILDER")
 print("="*60)
-
-# ------------------------------
-# 1. LOAD DATA
-# ------------------------------
 print("\n📂 Loading data...")
 df = pd.read_csv('bank-full.csv', sep=';')
 print(f"✅ Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
 
-# ------------------------------
-# 2. EXPLORATORY DATA ANALYSIS (EDA) - Track B Step 1
-# ------------------------------
+
+#EXPLORATORY DATA ANALYSIS (EDA)
+
 print("\n" + "="*60)
 print("📊 EXPLORATORY DATA ANALYSIS")
 print("="*60)
@@ -68,9 +63,8 @@ print(housing_rate)
 print(f"✅ With housing loan: {housing_rate['yes']*100:.1f}%")
 print(f"✅ Without housing loan: {housing_rate['no']*100:.1f}%")
 
-# ------------------------------
-# 3. VISUALIZATIONS (optional but helpful)
-# ------------------------------
+
+# 3. VISUALIZATIONS 
 print("\n📊 Generating visualizations...")
 
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -112,9 +106,7 @@ plt.tight_layout()
 plt.savefig('eda_visualizations.png', dpi=300, bbox_inches='tight')
 print("✅ Visualizations saved to 'eda_visualizations.png'")
 
-# ------------------------------
-# 4. PREPARE DATA FOR MODELING - Track B Step 2
-# ------------------------------
+# 4. PREPARE DATA FOR MODELING 
 print("\n" + "="*60)
 print("🤖 MODEL TRAINING")
 print("="*60)
@@ -136,9 +128,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 print(f"✅ Train set: {len(X_train)} samples")
 print(f"✅ Test set: {len(X_test)} samples")
 
-# ------------------------------
-# 5. TRAIN LOGISTIC REGRESSION (Baseline)
-# ------------------------------
+
+# 5. TRAIN LOGISTIC REGRESSION 
 print("\n📊 Training Logistic Regression (baseline)...")
 
 # One-hot encode
@@ -165,9 +156,9 @@ print("-"*40)
 print(classification_report(y_test, y_pred_lr))
 print(f"✅ ROC-AUC: {roc_auc_score(y_test, y_proba_lr):.4f}")
 
-# ------------------------------
-# 6. TRAIN CATBOOST (Main Model)
-# ------------------------------
+
+# 6. TRAIN CATBOOST 
+
 print("\n📊 Training CatBoost (main model)...")
 
 cb = CatBoostClassifier(
@@ -197,9 +188,7 @@ print(f"   False Positives: {cm[0,1]}")
 print(f"   False Negatives: {cm[1,0]}")
 print(f"   True Positives: {cm[1,1]}")
 
-# ------------------------------
-# 7. FEATURE IMPORTANCE - Track B Step 3
-# ------------------------------
+# FEATURE IMPORTANCE 
 print("\n" + "="*60)
 print("📊 FEATURE IMPORTANCE")
 print("="*60)
@@ -215,9 +204,9 @@ for i, (name, importance) in enumerate(sorted_importance[:10], 1):
 
 print(f"\n✅ Most important feature: {sorted_importance[0][0]} ({sorted_importance[0][1]:.4f})")
 
-# ------------------------------
-# 8. SAMPLE PREDICTIONS - Track B Step 4
-# ------------------------------
+
+# 8. SAMPLE PREDICTIONS
+
 print("\n" + "="*60)
 print("📋 SAMPLE PREDICTIONS (5 customers)")
 print("="*60)
@@ -242,9 +231,8 @@ for i, idx in enumerate(sample_indices, 1):
     print(f"   ✅ Actual: {'Subscribed' if actual == 1 else 'Not Subscribed'}")
     print(f"   🤖 Prediction: {'Subscribed' if pred == 1 else 'Not Subscribed'} (Probability: {proba*100:.1f}%)")
 
-# ------------------------------
+
 # 9. SAVE MODEL AND ARTIFACTS
-# ------------------------------
 print("\n" + "="*60)
 print("💾 SAVING MODEL AND ARTIFACTS")
 print("="*60)
@@ -263,7 +251,7 @@ with open('feature_importance.pkl', 'wb') as f:
     pickle.dump(sorted_importance, f)
 print("✅ Feature importance saved as 'feature_importance.pkl'")
 
-# Save scaler (for Logistic Regression if needed)
+# Save scaler 
 joblib.dump(scaler, 'scaler.pkl')
 print("✅ Scaler saved as 'scaler.pkl'")
 

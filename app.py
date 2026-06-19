@@ -10,29 +10,21 @@ from dotenv import load_dotenv
 import warnings
 warnings.filterwarnings('ignore')
 
-# Load environment variables
 load_dotenv()
-
-# ------------------------------
 # FastAPI app instance
-# ------------------------------
 app = FastAPI(
     title="BankMind Cross-Sell API",
     description="Predict term deposit subscriptions with ML and get LLM explanations.",
     version="1.0"
 )
 
-# ------------------------------
 # Load model and artifacts
-# ------------------------------
 print("🔄 Loading model and artifacts...")
-
 try:
     model = joblib.load('model.pkl')
-    print("✅ Model loaded successfully")
+    print("Model loaded successfully")
 except:
-    print("⚠️ Model not found. Run train.py first!")
-
+    print("Model not found. Run train.py first!")
 try:
     with open('feature_names.pkl', 'rb') as f:
         feature_names = pickle.load(f)
@@ -41,18 +33,16 @@ except:
     feature_names = ['age', 'job', 'marital', 'education', 'default', 'balance', 
                      'housing', 'loan', 'contact', 'day', 'month', 'campaign', 
                      'pdays', 'previous', 'poutcome']
-    print("⚠️ Using default feature names")
+    print("Using default feature names")
 
 try:
     with open('feature_importance.pkl', 'rb') as f:
         feature_importance = pickle.load(f)
-    print("✅ Feature importance loaded")
+    print("Feature importance loaded")
 except:
     feature_importance = None
-
-# ------------------------------
 # Pydantic input schema
-# ------------------------------
+
 class CustomerData(BaseModel):
     age: int
     job: str
@@ -70,24 +60,22 @@ class CustomerData(BaseModel):
     previous: int
     poutcome: str
 
-# ------------------------------
-# Groq client (optional)
-# ------------------------------
+# Groq client
+
 groq_client = None
 if os.getenv("GROQ_API_KEY"):
     try:
         from groq import Groq
         groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-        print("✅ Groq client initialized successfully")
+        print(" Groq client initialized successfully")
     except Exception as e:
         print(f"⚠️ Warning: Groq client initialization failed: {e}")
         groq_client = None
 else:
-    print("ℹ️ GROQ_API_KEY not found in .env - /explain endpoint will return 503")
+    print(" GROQ_API_KEY not found in .env - /explain endpoint will return 503")
 
-# ------------------------------
 # Helper function to get top factors
-# ------------------------------
+
 def get_top_factors(input_df, proba):
     """Get top factors influencing the prediction"""
     try:
@@ -114,16 +102,12 @@ def get_top_factors(input_df, proba):
     except:
         return ["balance", "pdays", "housing"]
 
-# ------------------------------
 # Endpoint: GET /health
-# ------------------------------
 @app.get("/health")
 def health_check():
     return {"status": "ok", "model": "CatBoost"}
 
-# ------------------------------
 # Endpoint: POST /predict
-# ------------------------------
 @app.post("/predict")
 def predict(customer: CustomerData):
     try:
@@ -142,7 +126,7 @@ def predict(customer: CustomerData):
         proba = model.predict_proba(input_df)[0][1]
         pred = model.predict(input_df)[0]
         
-        # Get top factors (real feature importance)
+        # Get top factors
         top_factors = get_top_factors(input_df, proba)
         
         return {
@@ -153,9 +137,7 @@ def predict(customer: CustomerData):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error in prediction: {str(e)}")
 
-# ------------------------------
 # Endpoint: POST /explain
-# ------------------------------
 @app.post("/explain")
 def explain(customer: CustomerData):
     if groq_client is None:
