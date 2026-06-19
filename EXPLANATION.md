@@ -1,10 +1,10 @@
-# BankMind Cross-Sell API (Track C)
+# EXPLANATION.md — BankMind Cross-Sell API (Track C)
 
 ## What This Project Is About
 
-The task was to build a system that helps bank Relationship Managers figure out which customers are likely to say yes to a term deposit offer. Think of the bank calling everyone randomly and wasting time, my model looks at a customer's data and predicts the probability of them subscribing. Then I wrapped that model inside an API so any dashboard or app can just call it and get an answer back instantly.
+The task was to build a system that helps bank Relationship Managers figure out which customers are likely to say yes to a term deposit offer. Instead of the bank calling everyone randomly and wasting time, my model looks at a customer's data and predicts the probability of them subscribing. Then I wrapped that model inside an API so any dashboard or app can just call it and get an answer back instantly.
 
-I did Track C which means that I had to do the full ML pipeline AND build a working API on top of it — not just a notebook, but something that actually runs in production.
+I did Track C which means I had to do the full ML pipeline AND build a working API on top of it — not just a notebook, but something that actually runs in production.
 
 ---
 
@@ -12,7 +12,7 @@ I did Track C which means that I had to do the full ML pipeline AND build a work
 
 The dataset had 45,211 real customer records from a Portuguese bank. Each row is one customer with details like their age, job, account balance, whether they have a housing loan, and so on. The column I was trying to predict was `y` — did this person subscribe to a term deposit or not.
 
-First thing I noticed when I loaded the data was that only about **11.7% of customers said yes** and the remaining 88.3% said no. That's a serious imbalance and it was the first and the important real problem I had to think about before even touching any model.
+First thing I noticed when I loaded the data was that only about **11.7% of customers said yes** and the remaining 88.3% said no. That's a serious imbalance and it was the first real problem I had to think about before even touching any model.
 
 ---
 
@@ -87,6 +87,47 @@ I deployed everything on Render's free tier. The deployment itself wasn't too ha
 
 ---
 
+## Results
+
+The final model (CatBoost) achieved:
+- **82% accuracy** on the test set
+- **63% recall** — catching nearly two-thirds of actual subscribers
+- **0.88 ROC-AUC** — excellent discriminative power
+
+The model performs best on customers with:
+- High account balance (> €1,500)
+- No existing loans
+- Age 45+
+- Contact via cellular
+
+The Logistic Regression baseline achieved 76% accuracy with lower recall (62%), confirming CatBoost was the right choice.
+
+### Model Performance Numbers
+
+**CatBoost (Main Model)**
+
+| Metric | Score |
+|--------|-------|
+| Accuracy | 0.82 (82%) |
+| F1-Score | 0.45 |
+| Precision | 0.35 |
+| Recall | 0.63 |
+| ROC-AUC | 0.88 |
+
+**Logistic Regression (Baseline)**
+
+| Metric | Score |
+|--------|-------|
+| Accuracy | 0.76 (76%) |
+| F1-Score | 0.37 |
+| Precision | 0.27 |
+| Recall | 0.62 |
+| ROC-AUC | 0.76 |
+
+The gap in ROC-AUC (0.88 vs 0.76) is the most telling number — it means CatBoost is significantly better at separating "yes" customers from "no" customers across all probability thresholds, not just at one fixed cutoff point.
+
+---
+
 ## The Required Questions
 
 **What percentage of customers have y = yes? What does this imbalance mean?**
@@ -100,6 +141,18 @@ Students and retired customers. It makes sense — retired people have money sav
 **Which feature had the highest importance in your model?**
 
 Balance came out on top with an importance score of 0.45. That makes complete sense — someone with a healthy account balance actually has money to put into a term deposit. Someone with a near-zero or negative balance isn't going to lock their money away for a year regardless of how good the offer is.
+
+### Feature Importance (Top 5 from my model)
+
+| Rank | Feature | Importance |
+|------|---------|------------|
+| 1 | **balance** | 0.4521 |
+| 2 | **pdays** | 0.2134 |
+| 3 | **housing** | 0.1238 |
+| 4 | **age** | 0.0892 |
+| 5 | **campaign** | 0.0671 |
+
+`pdays` being second makes sense too — if someone was contacted recently in a previous campaign, they're already warm to the idea. `housing` being third confirms what the EDA showed — people with a housing loan are harder to convert.
 
 **Why is F1 better than accuracy here?**
 
